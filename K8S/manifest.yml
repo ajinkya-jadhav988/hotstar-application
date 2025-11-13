@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: hotstar-container
-        image: acecloudacademy/hotstar
+        image: jadhavajinkya988/hotstar:latest
         ports:
         - containerPort: 3000
 ---
@@ -32,3 +32,4 @@ spec:
   ports:
   - port: 80
     targetPort: 3000
+
