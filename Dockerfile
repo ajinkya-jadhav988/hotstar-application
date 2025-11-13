@@ -1,21 +1,17 @@
-# Use Node.js Alpine base image
-FROM node:alpine
+# Step 1: Build the app
+FROM node:18-alpine AS build
 
-# Create and set the working directory inside the container
 WORKDIR /app
-
-# Copy package.json and package-lock.json to the working directory
-COPY package.json package-lock.json /app/
-
-# Install dependencies
+COPY package*.json ./
 RUN npm install
+COPY . .
+RUN npm run build    # This will create a /build or /dist folder with static assets
 
-# Copy the entire codebase to the working directory
-COPY . /app/
+# Step 2: Serve the built files
+FROM node:18-alpine
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=build /app/build ./build  # Copy built files from the build stage
 
-# Expose the port your app runs on (replace <PORT_NUMBER> with your app's actual port)
 EXPOSE 3000
-
-# Define the command to start your application (replace "start" with the actual command to start your app)
-CMD ["npm", "start"]
-
+CMD ["serve", "-s", "build", "-l", "3000"]
