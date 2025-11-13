@@ -9,7 +9,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         AWS_DEFAULT_REGION = 'ap-south-1'
-        CLUSTER_NAME = 'kube-eks-cluster'    // <-- replace with your EKS cluster name
+        CLUSTER_NAME = 'kube-eks-cluster'        // Replace with your actual EKS cluster name
         DOCKER_IMAGE = 'jadhavajinkya988/hotstar:latest'
     }
 
@@ -27,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Sonarqube Analysis') {
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
@@ -71,6 +71,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                         sh '''
+                        echo "Building and pushing Docker image..."
                         docker build -t hotstar .
                         docker tag hotstar $DOCKER_IMAGE
                         docker push $DOCKER_IMAGE
@@ -87,7 +88,7 @@ pipeline {
         }
 
         /* ===========================================
-           ✅ NEW EKS DEPLOYMENT STAGES START HERE
+           ✅ EKS DEPLOYMENT SECTION
            =========================================== */
 
         stage('Configure Kubeconfig for EKS') {
@@ -100,14 +101,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS') {
+        stage('Deploy to EKS Cluster') {
             steps {
                 sh '''
-                echo "Applying Kubernetes manifests..."
-                kubectl apply -f k8s/deployment.yaml
-                kubectl apply -f k8s/service.yaml
+                echo "Deploying Hotstar application to EKS..."
+                kubectl apply -f K8S/manifest.yaml
 
-                echo "Checking rollout status..."
+                echo "Verifying deployment rollout..."
                 kubectl rollout status deployment/hotstar-deployment
 
                 echo "Fetching service details..."
@@ -123,7 +123,7 @@ pipeline {
                 def buildStatus = currentBuild.currentResult
                 def buildUser = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userId ?: 'Github User'
 
-                emailext (
+                emailext(
                     subject: "Pipeline ${buildStatus}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                     body: """
                         <p>This is a Jenkins HOTSTAR CICD pipeline status.</p>
