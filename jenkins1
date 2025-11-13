@@ -105,7 +105,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Deploying Hotstar application to EKS..."
-                kubectl apply -f K8S/manifest.yaml
+                kubectl apply -f K8S/manifest.yml
 
                 echo "Verifying deployment rollout..."
                 kubectl rollout status deployment/hotstar-deployment
