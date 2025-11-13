@@ -5,8 +5,6 @@ metadata:
   name: hotstar-deployment
 spec:
   replicas: 2
-  strategy:
-    type: RollingUpdate
   selector:
     matchLabels:
       app: hotstar
@@ -19,7 +17,7 @@ spec:
       - name: hotstar-container
         image: jadhavajinkya988/hotstar:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -30,6 +28,6 @@ spec:
   selector:
     app: hotstar
   ports:
-  - port: 80
-    targetPort: 3000
-
+  - protocol: TCP
+    port: 80
+    targetPort: 80
